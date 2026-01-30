@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#121212"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="#ffffff" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ваше самочувствие"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#ffffff"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="24dp"
+                app:cardBackgroundColor="#1E2736"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ОЦЕНИТЕ СОСТОЯНИЕ (0-10)"
+                        android:textColor="#bdc3c7"
+                        android:textSize="12sp"
+                        android:letterSpacing="0.05"
+                        android:layout_marginBottom="12dp" />
+
+                    <TextView
+                        android:id="@+id/tvRatingValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5"
+                        android:textColor="#3498db"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:layout_gravity="center_horizontal" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderRating"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="0"
+                        android:valueTo="10"
+                        android:stepSize="1"
+                        android:value="5"
+                        app:thumbColor="#3498db"
+                        app:trackColorActive="#3498db"
+                        app:trackColorInactive="#403498db"
+                        app:tickColorActive="#ffffff" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="24dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="0 (Очень плохо)"
+                            android:textColor="#e74c3c"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="10 (Отлично)"
+                            android:textColor="#2ecc71"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="СИМПТОМЫ"
+                        android:textColor="#bdc3c7"
+                        android:textSize="12sp"
+                        android:letterSpacing="0.05"
+                        android:layout_marginBottom="12dp" />
+
+                    <CheckBox
+                        android:id="@+id/cbHeadache"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Головная боль"
+                        android:textColor="#ffffff"
+                        android:buttonTint="#3498db"
+                        android:paddingStart="8dp" />
+
+                    <CheckBox
+                        android:id="@+id/cbFatigue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Усталость / Слабость"
+                        android:textColor="#ffffff"
+                        android:buttonTint="#3498db"
+                        android:paddingStart="8dp" />
+
+                    <CheckBox
+                        android:id="@+id/cbDizziness"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Головокружение"
+                        android:textColor="#ffffff"
+                        android:buttonTint="#3498db"
+                        android:paddingStart="8dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#2Affffff"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <EditText
+                        android:id="@+id/etNotes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Добавить заметку..."
+                        android:textColorHint="#909090"
+                        android:textColor="#ffffff"
+                        android:background="@null"
+                        android:minHeight="48dp" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveEntry"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Сохранить запись"
+                android:textSize="16sp"
+                app:backgroundTint="#27ae60"
+                app:cornerRadius="20dp"
+                android:layout_marginBottom="32dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="История записей"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#ffffff"
+                android:layout_marginBottom="16dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

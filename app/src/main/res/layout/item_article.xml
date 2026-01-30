@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardBackgroundColor="#1E2736"
+    app:cardElevation="0dp"
+    android:layout_marginBottom="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <FrameLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_gradient_green"
+                android:id="@+id/iconContainer">
+
+                <ImageView
+                    android:id="@+id/ivIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_pressure"
+                    app:tint="#ffffff"
+                    android:layout_gravity="center" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                tools:text="Низкое давление"
+                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Рекомендуется выпить крепкий чай и отдохнуть."
+            android:textColor="#bdc3c7"
+            android:textSize="15sp"
+            android:lineSpacingMultiplier="1.2" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

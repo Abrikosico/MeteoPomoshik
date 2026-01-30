@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="#1E2736"
+    android:layout_marginBottom="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_diary_pen"
+                app:tint="#3498db"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                tools:text="26 янв. 2026, 12:00"
+                android:textColor="#bdc3c7"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="8/10"
+                android:textColor="#f1c40f"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp"
+            android:visibility="visible">
+
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/ic_location"
+                app:tint="#50ffffff"
+                android:layout_marginEnd="6dp"/>
+
+            <TextView
+                android:id="@+id/tvCityEntry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Москва"
+                android:textColor="#50ffffff"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#2Affffff"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvSymptoms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Симптомы: головная боль"
+            android:textColor="#ffffff"
+            android:textSize="15sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvNotes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Комментарий..."
+            android:textColor="#909090"
+            android:textSize="13sp"
+            android:layout_marginTop="4dp"
+            android:visibility="visible" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
