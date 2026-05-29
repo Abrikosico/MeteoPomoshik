@@ -12,5 +12,5 @@ public class GeoLocation {
     public double latitude;
     public double longitude;
     public String country;
-    public String admin1; // Область/Регион (для уточнения)
+    public String admin1;
 }

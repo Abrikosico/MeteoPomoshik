@@ -63,4 +63,7 @@ dependencies {
 
     // WorkManager (Фоновые задачи)
     implementation("androidx.work:work-runtime:2.9.0")
+
+    // БЕСПЛАТНЫЕ КАРТЫ (OpenStreetMap)
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 }

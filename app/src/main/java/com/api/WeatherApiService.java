@@ -7,7 +7,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public interface WeatherApiService {
-    // 1. Погода: запрашиваем температуру и давление
+    // 1. Погода
     @GET("v1/forecast")
     Call<WeatherResponse> getWeather(
             @Query("latitude") double lat,
@@ -15,7 +15,7 @@ public interface WeatherApiService {
             @Query("current") String currentParams // "temperature_2m,surface_pressure"
     );
 
-    // 2. Поиск города: count - кол-во результатов, language - язык
+    // 2. Поиск города
     @GET("v1/search")
     Call<GeoLocation.Response> searchCity(
             @Query("name") String name,

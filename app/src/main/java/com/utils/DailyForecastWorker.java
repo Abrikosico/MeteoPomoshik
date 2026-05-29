@@ -87,13 +87,12 @@ public class DailyForecastWorker extends Worker {
     private void sendNotification(Context context, String title, String message) {
         String channelId = "weather_alerts";
 
-        // Создаем Intent, чтобы при клике открывалось приложение
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(R.drawable.ic_risk_alert) // Убедитесь, что иконка существует
+                .setSmallIcon(R.drawable.ic_risk_alert)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -102,11 +101,11 @@ public class DailyForecastWorker extends Worker {
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
-        // Проверка разрешений для Android 13+
+
         try {
             notificationManager.notify(1001, builder.build());
         } catch (SecurityException e) {
-            // Разрешение не дано
+
         }
     }
 }

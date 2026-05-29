@@ -10,8 +10,7 @@ public class WellbeingEntry {
 
     public String userId;
 
-    // !! НОВОЕ ПОЛЕ !!
-    public String cityName; // Где была сделана запись
+    public String cityName;
 
     public long timestamp;
     public int rating;

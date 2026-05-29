@@ -41,16 +41,14 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    // UI Элементы
     private TextView tvCity, tvRiskLevel, tvAdvice, tvPressureInfo, tvKpInfo, tvSensitivityInfo;
     private Button btnChangeCity, btnOpenDiary;
-    private ImageButton btnAdvice, btnSettings;
 
-    // Элементы для смены дизайна
+    private ImageButton btnAdvice, btnSettings, btnMap;
+
     private View cardRiskBg;
     private ImageView ivRiskIcon;
 
-    // Данные
     private double currentPressure = 0;
     private int currentKpIndex = 0;
     private boolean isSensitiveToPressure = true;
@@ -63,19 +61,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1. Проверка авторизации
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
         }
 
-        // 2. Инициализация фоновых задач и уведомлений
         createNotificationChannel();
         checkNotificationPermission();
-        scheduleWorker(); // Запуск проверки погоды
+        scheduleWorker();
 
-        // 3. UI
         initViews();
         setupListeners();
     }
@@ -99,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
         btnAdvice = findViewById(R.id.btnAdvice);
         btnSettings = findViewById(R.id.btnSettings);
 
+        // !! Находим кнопку карты
+        btnMap = findViewById(R.id.btnMap);
+
         cardRiskBg = findViewById(R.id.cardRiskBg);
         ivRiskIcon = findViewById(R.id.ivRiskIcon);
     }
@@ -108,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
         btnOpenDiary.setOnClickListener(v -> startActivity(new Intent(this, DiaryActivity.class)));
         btnAdvice.setOnClickListener(v -> startActivity(new Intent(this, AdviceActivity.class)));
         btnSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+
+        // !! Переход на карту
+        btnMap.setOnClickListener(v -> startActivity(new Intent(this, MapActivity.class)));
     }
 
     private void loadUserDataAndWeather() {
@@ -244,17 +245,14 @@ public class MainActivity extends AppCompatActivity {
         tvSensitivityInfo.setText(sensitivityText);
     }
 
-    // --- ФОНОВЫЕ ЗАДАЧИ (ОБНОВЛЕНО: 6 часов) ---
-
     private void scheduleWorker() {
-        // Проверяем погоду каждые 6 часов (4 раза в день)
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
                 DailyForecastWorker.class, 6, TimeUnit.HOURS)
                 .build();
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
                 "daily_forecast",
-                ExistingPeriodicWorkPolicy.UPDATE, // UPDATE применит новое время, если задача уже была
+                ExistingPeriodicWorkPolicy.UPDATE,
                 request);
     }
 

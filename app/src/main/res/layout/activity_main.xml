@@ -36,13 +36,22 @@
             android:layout_marginStart="12dp" />
 
         <ImageButton
+            android:id="@+id/btnMap"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_map"
+            app:tint="#3498db"
+            android:layout_marginEnd="4dp"/>
+
+        <ImageButton
             android:id="@+id/btnAdvice"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_bulb"
             app:tint="#f1c40f"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="4dp"/>
 
         <ImageButton
             android:id="@+id/btnSettings"
@@ -101,7 +110,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Получаем прогноз..."
-                tools:text="Сегодня отличный день. Давление в норме."
+                tools:text="Сегодня отличный день."
                 android:textColor="#f0f0f0"
                 android:textSize="16sp"
                 android:lineSpacingMultiplier="1.2"
