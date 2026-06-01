@@ -66,4 +66,7 @@ dependencies {
 
     // БЕСПЛАТНЫЕ КАРТЫ (OpenStreetMap)
     implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+    // Анимации Lottie
+    implementation("com.airbnb.android:lottie:6.4.0")
 }

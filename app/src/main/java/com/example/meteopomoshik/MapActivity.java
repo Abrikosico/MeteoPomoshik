@@ -1,6 +1,9 @@
 package com.example.meteopomoshik;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -10,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.api.RetrofitClient;
 import com.api.WeatherApiService;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -18,6 +22,7 @@ import com.utils.Constants;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -43,6 +48,7 @@ public class MapActivity extends AppCompatActivity {
 
     private int currentLayer = LAYER_PRESSURE;
     private TilesOverlay weatherOverlay;
+    private MapTileProviderBasic weatherProvider;
     private Marker currentMarker;
 
     private GeoPoint homePoint;
@@ -51,14 +57,20 @@ public class MapActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // --- ЭКСТРЕМАЛЬНЫЕ НАСТРОЙКИ СКОРОСТИ OSMDROID ---
         Configuration.getInstance().load(getApplicationContext(),
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
+        // Потоки и Кэш
+        Configuration.getInstance().setTileDownloadThreads((short) 15);
+        Configuration.getInstance().setCacheMapTileCount((short) 300);
+        Configuration.getInstance().setTileFileSystemCacheMaxBytes(500L * 1024 * 1024);
+        Configuration.getInstance().setTileFileSystemCacheTrimBytes(400L * 1024 * 1024);
+
         setContentView(R.layout.activity_map);
 
         loadHomeLocation();
-
         initViews();
         setupListeners();
         setupBaseMap();
@@ -102,12 +114,26 @@ public class MapActivity extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.setBuiltInZoomControls(false);
-
         map.getController().setZoom(10.0);
+
+        // --- ИСПРАВЛЕНИЕ МЕРЦАНИЯ: Убираем серую сетку базовой карты ---
+        map.getOverlayManager().getTilesOverlay().setLoadingBackgroundColor(Color.parseColor("#E0E0E0"));
+        map.getOverlayManager().getTilesOverlay().setLoadingLineColor(Color.TRANSPARENT);
+
+        // ПРИГЛУШАЕМ БАЗОВУЮ КАРТУ
+        ColorMatrix baseMatrix = new ColorMatrix();
+        baseMatrix.setSaturation(0.2f);
+        float darken = 0.7f;
+        baseMatrix.postConcat(new ColorMatrix(new float[]{
+                darken, 0, 0, 0, 0,
+                0, darken, 0, 0, 0,
+                0, 0, darken, 0, 0,
+                0, 0, 0, 1, 0
+        }));
+        map.getOverlayManager().getTilesOverlay().setColorFilter(new ColorMatrixColorFilter(baseMatrix));
 
         if (homePoint != null) {
             map.getController().setCenter(homePoint);
-
             Marker homeMarker = new Marker(map);
             homeMarker.setPosition(homePoint);
             homeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -172,7 +198,6 @@ public class MapActivity extends AppCompatActivity {
         double pressureMmHg = Constants.hPaToMmHg(pressureHpa);
 
         BottomSheetDialog dialog = new BottomSheetDialog(this, com.google.android.material.R.style.Theme_Design_BottomSheetDialog);
-
         View view = getLayoutInflater().inflate(R.layout.layout_weather_bottom_sheet, null);
 
         TextView tvTemp = view.findViewById(R.id.tvBsTemp);
@@ -180,6 +205,20 @@ public class MapActivity extends AppCompatActivity {
         TextView tvPressure = view.findViewById(R.id.tvBsPressure);
         TextView tvWind = view.findViewById(R.id.tvBsWind);
         View btnClose = view.findViewById(R.id.btnBsClose);
+
+        // --- ПОДКЛЮЧАЕМ LOTTIE АНИМАЦИЮ ---
+        LottieAnimationView lottieView = view.findViewById(R.id.lottieWeatherView);
+        if (lottieView != null) {
+            if (currentLayer == LAYER_RAIN) {
+                lottieView.setAnimation(R.raw.anim_rain);
+            } else if (currentLayer == LAYER_WIND) {
+                lottieView.setAnimation(R.raw.anim_wind);
+            } else {
+                lottieView.setAnimation(R.raw.anim_sun); // Для давления покажем просто солнце или облако
+            }
+            lottieView.playAnimation();
+        }
+        // ----------------------------------
 
         tvTemp.setText(String.format("%+.0f°", temp));
         tvCoords.setText(String.format("%.4f, %.4f", p.getLatitude(), p.getLongitude()));
@@ -189,11 +228,9 @@ public class MapActivity extends AppCompatActivity {
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
         dialog.setContentView(view);
-
         if (dialog.getWindow() != null) {
             dialog.getWindow().findViewById(com.google.android.material.R.id.design_bottom_sheet).setBackgroundResource(android.R.color.transparent);
         }
-
         dialog.show();
     }
 
@@ -210,7 +247,15 @@ public class MapActivity extends AppCompatActivity {
     }
 
     private void updateWeatherLayer(int layerType) {
-        if (weatherOverlay != null) map.getOverlays().remove(weatherOverlay);
+        if (weatherOverlay != null) {
+            map.getOverlays().remove(weatherOverlay);
+            weatherOverlay = null;
+        }
+
+        if (weatherProvider != null) {
+            weatherProvider.detach();
+            weatherProvider = null;
+        }
 
         String layerCode;
         String layerName;
@@ -224,7 +269,7 @@ public class MapActivity extends AppCompatActivity {
         tvLegend.setText(layerName);
 
         OnlineTileSourceBase tileSource = new OnlineTileSourceBase(
-                "OWM_" + layerCode, 0, 19, 256, "",
+                "OWM_" + layerCode, 0, 19, 256, ".png",
                 new String[] { "https://tile.openweathermap.org/map/" + layerCode + "/" }
         ) {
             @Override
@@ -235,10 +280,32 @@ public class MapActivity extends AppCompatActivity {
             }
         };
 
-        weatherOverlay = new TilesOverlay(new org.osmdroid.tileprovider.MapTileProviderBasic(getApplicationContext(), tileSource), getApplicationContext());
-        weatherOverlay.setLoadingBackgroundColor(android.graphics.Color.TRANSPARENT);
+        weatherProvider = new MapTileProviderBasic(getApplicationContext(), tileSource);
+        weatherOverlay = new TilesOverlay(weatherProvider, getApplicationContext());
+
+        weatherOverlay.setLoadingBackgroundColor(Color.TRANSPARENT);
+        weatherOverlay.setLoadingLineColor(Color.TRANSPARENT);
+
+        if (layerType == LAYER_WIND || layerType == LAYER_RAIN) {
+            ColorMatrix weatherMatrix = new ColorMatrix(new float[] {
+                    1.3f, 0, 0, 0, 0,
+                    0, 1.3f, 0, 0, 0,
+                    0, 0, 1.3f, 0, 0,
+                    0, 0, 0, 1.6f, 0
+            });
+            weatherOverlay.setColorFilter(new ColorMatrixColorFilter(weatherMatrix));
+        } else if (layerType == LAYER_PRESSURE) {
+            ColorMatrix pressureMatrix = new ColorMatrix(new float[] {
+                    0.9f, 0, 0, 0, 0,
+                    0, 0.9f, 0, 0, 0,
+                    0, 0, 0.9f, 0, 0,
+                    0, 0, 0, 0.65f, 0
+            });
+            weatherOverlay.setColorFilter(new ColorMatrixColorFilter(pressureMatrix));
+        }
 
         map.getOverlays().add(weatherOverlay);
+
         if(currentMarker != null) {
             map.getOverlays().remove(currentMarker);
             map.getOverlays().add(currentMarker);
