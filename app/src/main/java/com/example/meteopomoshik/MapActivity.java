@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat; // <-- ДОБАВЛЕН ИМПОРТ ДЛЯ ИКОНОК
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.api.RetrofitClient;
@@ -57,13 +58,11 @@ public class MapActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // --- ЭКСТРЕМАЛЬНЫЕ НАСТРОЙКИ СКОРОСТИ OSMDROID ---
         Configuration.getInstance().load(getApplicationContext(),
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
-        // Потоки и Кэш
-        Configuration.getInstance().setTileDownloadThreads((short) 15);
+        Configuration.getInstance().setTileDownloadThreads((short) 10);
         Configuration.getInstance().setCacheMapTileCount((short) 300);
         Configuration.getInstance().setTileFileSystemCacheMaxBytes(500L * 1024 * 1024);
         Configuration.getInstance().setTileFileSystemCacheTrimBytes(400L * 1024 * 1024);
@@ -116,11 +115,9 @@ public class MapActivity extends AppCompatActivity {
         map.setBuiltInZoomControls(false);
         map.getController().setZoom(10.0);
 
-        // --- ИСПРАВЛЕНИЕ МЕРЦАНИЯ: Убираем серую сетку базовой карты ---
         map.getOverlayManager().getTilesOverlay().setLoadingBackgroundColor(Color.parseColor("#E0E0E0"));
         map.getOverlayManager().getTilesOverlay().setLoadingLineColor(Color.TRANSPARENT);
 
-        // ПРИГЛУШАЕМ БАЗОВУЮ КАРТУ
         ColorMatrix baseMatrix = new ColorMatrix();
         baseMatrix.setSaturation(0.2f);
         float darken = 0.7f;
@@ -138,6 +135,9 @@ public class MapActivity extends AppCompatActivity {
             homeMarker.setPosition(homePoint);
             homeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             homeMarker.setTitle("Мой город");
+
+            homeMarker.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_custom_pin));
+
             map.getOverlays().add(homeMarker);
         }
     }
@@ -164,6 +164,8 @@ public class MapActivity extends AppCompatActivity {
         currentMarker.setPosition(p);
         currentMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         currentMarker.setTitle("Выбрано");
+
+        currentMarker.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_custom_pin));
 
         map.getOverlays().add(currentMarker);
         map.invalidate();
@@ -206,7 +208,6 @@ public class MapActivity extends AppCompatActivity {
         TextView tvWind = view.findViewById(R.id.tvBsWind);
         View btnClose = view.findViewById(R.id.btnBsClose);
 
-        // --- ПОДКЛЮЧАЕМ LOTTIE АНИМАЦИЮ ---
         LottieAnimationView lottieView = view.findViewById(R.id.lottieWeatherView);
         if (lottieView != null) {
             if (currentLayer == LAYER_RAIN) {
@@ -214,11 +215,10 @@ public class MapActivity extends AppCompatActivity {
             } else if (currentLayer == LAYER_WIND) {
                 lottieView.setAnimation(R.raw.anim_wind);
             } else {
-                lottieView.setAnimation(R.raw.anim_sun); // Для давления покажем просто солнце или облако
+                lottieView.setAnimation(R.raw.anim_sun);
             }
             lottieView.playAnimation();
         }
-        // ----------------------------------
 
         tvTemp.setText(String.format("%+.0f°", temp));
         tvCoords.setText(String.format("%.4f, %.4f", p.getLatitude(), p.getLongitude()));
@@ -226,6 +226,14 @@ public class MapActivity extends AppCompatActivity {
         tvWind.setText(String.format("%.1f", wind));
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.setOnDismissListener(d -> {
+            if (currentMarker != null) {
+                map.getOverlays().remove(currentMarker);
+                currentMarker = null;
+                map.invalidate();
+            }
+        });
 
         dialog.setContentView(view);
         if (dialog.getWindow() != null) {
