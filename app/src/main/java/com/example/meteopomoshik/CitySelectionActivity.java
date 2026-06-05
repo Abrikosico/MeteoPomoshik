@@ -1,9 +1,11 @@
 package com.example.meteopomoshik;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,6 +29,7 @@ import com.utils.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,7 +45,6 @@ public class CitySelectionActivity extends AppCompatActivity {
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
 
-    // Используем наш новый адаптер
     private CityAdapter adapter;
     private List<GeoLocation> foundLocations = new ArrayList<>();
 
@@ -63,9 +65,8 @@ public class CitySelectionActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        // Настраиваем красивый выпадающий список
-        etCityName.setDropDownBackgroundResource(R.drawable.bg_popup_dark); // Наш темный фон
-        etCityName.setDropDownVerticalOffset(16); // Отступ вниз
+        etCityName.setDropDownBackgroundResource(R.drawable.bg_popup_dark);
+        etCityName.setDropDownVerticalOffset(16);
 
         setupAutocomplete();
 
@@ -87,18 +88,16 @@ public class CitySelectionActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {
                 if (s.length() >= 2) {
                     searchRunnable = () -> searchCities(s.toString());
-                    handler.postDelayed(searchRunnable, 500); // Ждем 500мс после ввода
+                    handler.postDelayed(searchRunnable, 100);
                 }
             }
         });
 
-        // Обработка клика по элементу из списка
         etCityName.setOnItemClickListener((parent, view, position, id) -> {
             GeoLocation selected = adapter.getItem(position);
             if (selected != null) {
-                // Заполняем поле красиво "Москва" (а не "Москва, RU")
                 etCityName.setText(selected.name);
-                etCityName.setSelection(selected.name.length()); // Курсор в конец
+                etCityName.setSelection(selected.name.length());
                 saveLocationAndFinish(selected);
             }
         });
@@ -106,14 +105,26 @@ public class CitySelectionActivity extends AppCompatActivity {
 
     private void searchCities(String query) {
         WeatherApiService service = RetrofitClient.getWeatherClient(Constants.BASE_URL_GEOCODING).create(WeatherApiService.class);
-        // "count=10" - просим больше вариантов, чтобы компенсировать ошибки ввода
-        service.searchCity(query, 10, "ru", "json").enqueue(new Callback<GeoLocation.Response>() {
+        service.searchCity(query, 20, "ru", "json").enqueue(new Callback<GeoLocation.Response>() {
             @Override
             public void onResponse(Call<GeoLocation.Response> call, Response<GeoLocation.Response> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().results != null) {
                     foundLocations = response.body().results;
 
-                    // Обновляем адаптер
+                    SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                    float myLat = prefs.getFloat("lat", 55.75f);
+                    float myLon = prefs.getFloat("lon", 37.61f);
+
+                    Collections.sort(foundLocations, (loc1, loc2) -> {
+                        float[] dist1 = new float[1];
+                        Location.distanceBetween(myLat, myLon, loc1.latitude, loc1.longitude, dist1);
+
+                        float[] dist2 = new float[1];
+                        Location.distanceBetween(myLat, myLon, loc2.latitude, loc2.longitude, dist2);
+
+                        return Float.compare(dist1[0], dist2[0]);
+                    });
+
                     adapter = new CityAdapter(CitySelectionActivity.this, foundLocations);
                     etCityName.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
@@ -121,12 +132,10 @@ public class CitySelectionActivity extends AppCompatActivity {
             }
 
             @Override public void onFailure(Call<GeoLocation.Response> call, Throwable t) {
-                // Ошибки тихо игнорируем при автопоиске
             }
         });
     }
 
-    // --- Логика Геолокации и Сохранения (Без изменений) ---
     private void checkLocationPermissionAndGetLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
